@@ -2,7 +2,7 @@ const express = require('express'),
   cors = require('cors'),
   translate = require('node-google-translate-skidz'),
   app = express(),
-  PORT = 3000,
+  PORT = process.env.PORT || 3000,
   arrObrasImgAdicionales = [];
 
 app.use(cors());
