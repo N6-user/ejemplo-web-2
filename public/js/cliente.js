@@ -16,7 +16,7 @@ const arrGrillasIDs = [],
 async function colocarDepartamentos() {
   // obtener departamentos traducidos al español
   try {
-    const response = await fetch('http://localhost:3000/obtenerDepartamentos');
+    const response = await fetch(window.location.href + 'obtenerDepartamentos');
     const departamentos = await response.json();
 
     // colocar opción "sin especificar" en el select
@@ -136,7 +136,7 @@ async function mostrarResultados() {
     palabraClave: palabraClave
   };
 
-  const responseIDs = await fetch('http://localhost:3000/obtenerIDs', {
+  const responseIDs = await fetch(window.location.href + 'obtenerIDs', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(filtros),
@@ -174,7 +174,7 @@ async function mostrarResultados() {
   controllerObras.controller = new AbortController();
   controllerObras.signal = controllerObras.controller.signal;
 
-  const responseObras = await fetch('http://localhost:3000/obtenerObras', {
+  const responseObras = await fetch(window.location.href + 'obtenerObras', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(datos),
