@@ -1,0 +1,185 @@
+body {
+	/* permitir que el header ocupe todo el ancho y alto de la ventana que se pretende */
+	margin: 0;
+}
+
+header {
+	/* estética */
+	background-color: lightgrey;
+	height: 200px;
+	font-size: 80px;
+
+	/* alinear el texto vertical y horizontalmente*/
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+#indicacion-parametros {
+	font-size: 20px;
+	text-align: center;
+	margin: 30px auto;
+	width: 50%;
+}
+
+#elementos-formulario {
+	display: flex;
+	height: 100px;
+	justify-content: center;
+	align-items: center;
+}
+
+.entrada-formulario {
+	margin: 0 30px;
+}
+
+.label-parametro {
+	font-size: 20px;
+}
+
+.elemento-parametro {
+	font-size: 16px;
+	margin: 10px 0 0;
+}
+
+#boton-buscar {
+	font-size: 16px;
+	margin-left: 20px;
+}
+
+#boton-limpiar-filtros {
+	font-size: 16px;
+	margin-right: 20px;
+}
+
+/* div que contiene la grilla de resultados */
+.fila-cartas {
+	/* configuración de grid */
+	display: grid;
+	gap: 1% 1.33%;
+	grid-template-columns: 24% 24% 24% 24%;
+	align-items: start;
+	/* estética */
+	margin: 2% 2%;
+}
+
+.carta {
+	display: flex;
+	flex-direction: column;
+	justify-content: start;
+	align-items: center;
+	padding: 5%;
+	width: 90%;
+	background-color: lightgrey;
+}
+
+.carta>img {
+	display: block;
+	width: 100%;
+}
+
+/* TODO: ver qué hacer con esta regla */
+#div-datos-obra {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: start;
+	width: 300px;
+}
+
+.caracteristicas-obra {
+	width: 100%;
+	margin: 0 0 20px
+}
+
+.par-caracteristica-valor {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+}
+
+.caracteristica {
+	display: flex;
+	justify-content: end;
+	/* margin-right: 5px; */
+	width: 30%;
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.valor {
+	padding-left: 8px;
+	width: 70%;
+	font-size: 16px;
+}
+
+#mensaje-cero-resultados {
+	text-align: center;
+	font-size: 20px;
+	margin: 3%;
+}
+
+#mensaje-entrada-incorrecta {
+	text-align: center;
+	font-size: 20px;
+	font-weight: bold;
+	color: red;
+	margin: 0;
+}
+
+#mensaje-busqueda-ejecucion {
+	text-align: center;
+	font-size: 20px;
+	margin: 3%;
+}
+
+#mensaje-cargando-informacion {
+	text-align: center;
+	font-size: 20px;
+	margin: 5%;
+}
+
+.indice {
+	display: flex;
+	justify-content: center;
+	margin: 40px;
+	font-size: 24px;
+}
+
+.enlace-grilla {
+	margin: 0 0.75%;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+#indice-actual {
+	text-decoration: none;
+	cursor: default;
+}
+
+#fecha-origen-obra {
+	background-color: aliceblue;
+	width: 200px;
+	position: fixed;
+	display: none;
+	border: 1px solid black;
+	border-radius: 5px;
+}
+
+.enlace-img-adicionales {
+	display: flex;
+	background-color: aquamarine;
+	width: 60%;
+	height: 30px;
+	border-radius: 25px;
+	border-width: 0;
+	justify-content: center;
+	align-items: center;
+	text-decoration: none;
+	color: black;
+	margin: 20px 0;
+}
+
+.entrada-erronea {
+	border: 3px solid red;
+}

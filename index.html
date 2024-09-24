@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+	<header>Sitio web de obras de arte</header>
+	<form action="" id="fomulario">
+		<p id="indicacion-parametros">Puede realizar una búsqueda de obras de arte configurando la misma
+			al colocar valores en uno o más de los siguientes campos. También puede no colocar ningún
+			valor en ningún campo, para ver todas las obras.<br>
+			Tenga en cuenta que si vuelve a cambiar el contenido de alguno de los campos, los resultados
+			actuales se perderán (incluso aunque no haya presionado nuevamente el botón 'Buscar').</p>
+		<div id="elementos-formulario">
+			<button type="button" id="boton-limpiar-filtros">Limpiar filtros</button>
+			<div class="entrada-formulario">
+				<label for="departamentos" class="label-parametro">Seleccione un
+					departamento:</label><br>
+				<select id="departamentos" class="elemento-parametro" name="departamentos">
+				</select>
+			</div>
+
+			<div class="entrada-formulario">
+				<label for="palabra-clave" class="label-parametro">Ingrese una palabra
+					clave:
+				</label><br>
+				<input type="text" id="palabra-clave" class="elemento-parametro">
+			</div>
+
+			<div class="entrada-formulario">
+				<label for="localizacion" class="label-parametro">Ingrese una localización:
+				</label><br>
+				<input type="text" id="localizacion" class="elemento-parametro">
+			</div>
+			<button type="button" id="boton-buscar">Buscar</button>
+		</div>
+	</form>
+	<script src="./cliente.js" id="script"></script>
+</body>
+
+</html>
