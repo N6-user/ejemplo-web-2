@@ -6,10 +6,11 @@ const BODY = document.body,
   PALABRA_CLAVE = document.getElementById("palabra-clave"),
   BOTON_BUSCAR = document.getElementById("boton-buscar"),
   BOTON_LIMPIAR = document.getElementById("boton-limpiar-filtros");
-
+indicarError
 // objetos útiles
 const arrGrillasIDs = [],
   arrGrillasCartas = [],
+  arrGrillasObras = [],
   controllerObras = {};
 
 // obtener y colocar departamentos en el select "departamentos"
@@ -37,12 +38,12 @@ async function colocarDepartamentos() {
     // mostrar formulario
     FORMULARIO.style.display = 'block';
 
-    // sacar mensaje de "cargando información"
-    const mensajeCargando = document.getElementById("mensaje-cargando-informacion");
+    // sacar mensaje de "Cargando contenido"
+    const mensajeCargando = document.getElementById("mensaje-informacion");
     BODY.removeChild(mensajeCargando);
 
   } catch (error) {
-    const mensajeCargando = document.getElementById("mensaje-cargando-informacion");
+    const mensajeCargando = document.getElementById("mensaje-informacion");
     const mensajeError = document.createElement('p')
 
     // crear y colocar mensaje de error    
@@ -52,12 +53,11 @@ async function colocarDepartamentos() {
 
     BODY.replaceChild(mensajeErrorCarga, mensajeCargando);
   }
-
 }
 
 // resaltar entrada con contenido erróneo y mostrar mensaje de error
 function indicarError() {
-  // modificar entrada "palabra clave"
+  // modificar input "palabra clave"
   PALABRA_CLAVE.classList.add("entrada-erronea");
 
   // crear y colocar mensaje de error    
@@ -71,8 +71,8 @@ function indicarError() {
 function indicarBusqueda() {
   // crear y colocar mensaje de búsqueda    
   const mensajeBusquedaEnEjecucion = document.createElement("p");
-  mensajeBusquedaEnEjecucion.id = "mensaje-busqueda-ejecucion";
-  mensajeBusquedaEnEjecucion.innerHTML = "Se están obteniendo las obras";
+  mensajeBusquedaEnEjecucion.id = "mensaje-informacion";
+  mensajeBusquedaEnEjecucion.innerHTML = "Obteniendo obras";
 
   // actualizar mensaje cada segundo
   const intervalo = setInterval(() => {
@@ -83,7 +83,7 @@ function indicarBusqueda() {
       if (mensajeBusquedaEnEjecucion.innerHTML.slice(-3) !== '...') {
         mensajeBusquedaEnEjecucion.innerHTML += '.';
       } else {
-        mensajeBusquedaEnEjecucion.innerHTML = "Se están obteniendo las obras";
+        mensajeBusquedaEnEjecucion.innerHTML = "Obteniendo obras";
       }
     } else {
       // se quitó el mensaje
@@ -91,6 +91,96 @@ function indicarBusqueda() {
     }
   }, 1000);
   FORMULARIO.insertAdjacentElement("afterend", mensajeBusquedaEnEjecucion);
+}
+
+// armar arreglo de grillas de obras en base a los resultados obtenidos desde el servidor
+function crearGrillasObras(arrObras) {
+  const arrGrillasObras = [];
+  const cantGrillas = Math.ceil(arrObras.length / 20),
+    cantFilas = Math.ceil(arrObras.length / 4),
+    cantFilasUltimaGrilla = cantFilas % 5 || 5,
+    cantObrasUltimaFila = arrObras.length % 4 || 4;
+
+  // en caso de que no haya ninguna obra registrada y con imagen obtenida en la búsqueda
+  if (cantGrillas === 0) {
+    return null;
+  }
+
+  // crear grillas y filas
+  for (let i = 0; i < cantGrillas; i++) {
+    // la cantidad de filas podría ser menor a 5 en la última grilla
+    const grilla = [];
+    const cantFilasGrillaActual = (i === cantGrillas - 1) ? cantFilasUltimaGrilla : 5;
+
+    for (let j = 0; j < cantFilasGrillaActual; j++) {
+      // la cantidad de obras podría ser menor que 4 en la última fila de la última grilla
+      const cantObrasFilaActual = ((i === cantGrillas - 1) && (j === cantFilasUltimaGrilla - 1)) ? cantObrasUltimaFila : 4;
+
+      // crear fila
+      const filaDeObras = []
+
+      for (let k = 0; k < cantObrasFilaActual; k++) {
+        // almacenar obra
+        filaDeObras.push(arrObras[i * 20 + j * 4 + k]);
+      }
+
+      grilla.push(filaDeObras);
+    }
+
+    arrGrillasObras.push(grilla);
+  }
+
+  return arrGrillasObras;
+}
+
+// retorna promesa que resuelve a grilla de cartas a partir de un índice del arreglo de las grillas de obras (en forma de objetos), solamente si no existía previamente
+function crearGrillaCartas(index) {
+  // ya existe la grilla de cartas correspondiente a la grilla de obras indicada por index
+  if (arrGrillasCartas[index] !== undefined) {
+    return arrGrillasCartas[index];
+  }
+
+  const grillaObras = arrGrillasObras[index];
+  const grillaCartas = [];
+
+  // obtener cantidad de filas para la grilla  
+  const cantFilas = (grillaObras !== undefined) ? grillaObras.length : 0;
+
+  if (cantFilas === 0) {
+    return null;
+  }
+
+  for (let i = 0; i < cantFilas; i++) {
+    // obtener cantidad de obras para la fila actual (la última fila podría tener menos de 4 obras)
+    const filaActual = grillaObras[i];
+    const cantObrasFilaActual = filaActual.length;
+
+    // crear fila
+    const filaDeCartas = document.createElement("div");
+    filaDeCartas.classList.add("fila-cartas");
+
+    for (let j = 0; j < cantObrasFilaActual; j++) {
+      // armar carta
+      const carta = document.createElement("div");
+      carta.classList.add("carta");
+
+      const obraActual = filaActual[j];
+      agregarImagenACarta(carta, obraActual);
+      agregarDatosACarta(carta, obraActual);
+      agregarBotonImgAdicionales(carta, obraActual);
+
+      filaDeCartas.appendChild(carta);
+    }
+
+    grillaCartas.push(filaDeCartas);
+  }
+
+  // esperar un momento a que se recuperen las imágenes  
+  return new Promise((res, rej) => {
+    setTimeout(() => {
+      res(grillaCartas);
+    }, 5000);
+  });;
 }
 
 // realizar búsqueda y mostrar obras obtenidas
@@ -120,7 +210,7 @@ async function mostrarResultados() {
 
     // si aún se indica un error (aunque no existe actualmente), corregir
     const mensajeEntradaIncorrecta = document.getElementById("mensaje-entrada-incorrecta");
-    if (mensajeEntradaIncorrecta) {
+    if (mensajeEntradaIncorrecta !== null) {
       mensajeEntradaIncorrecta.remove();
       PALABRA_CLAVE.classList.remove("entrada-erronea");
     }
@@ -149,15 +239,17 @@ async function mostrarResultados() {
   // en caso de que no se haya encontrado nada, actualizar correspondientemente
   if (resultadoIDs.total === 0) {
     // sacar mensaje de búsqueda en ejecución
-    const mensajeBusquedaEnEjecucion = document.getElementById("mensaje-busqueda-ejecucion");
-    if (mensajeBusquedaEnEjecucion) {
-      mensajeBusquedaEnEjecucion.remove();
-    }
+    const mensajeInformacion = document.getElementById("mensaje-informacion");
 
-    const mensaje = document.createElement("p");
-    mensaje.id = "mensaje-cero-resultados";
-    mensaje.innerHTML = "No se encontraron resultados que coincidan con los filtros ingresados";
-    BODY.appendChild(mensaje);
+    // colocar mensajes de obras no encontradas
+    if (mensajeInformacion !== null) {
+      mensajeInformacion.innerHTML = "No se encontraron obras que coincidan con los filtros ingresados";
+    } else {
+      const mensaje = document.createElement("p");
+      mensaje.id = "mensaje-informacion";
+      mensaje.innerHTML = "No se encontraron obras que coincidan con los filtros ingresados";
+      BODY.appendChild(mensaje);
+    }
 
     // posibilitar que el usuario haga una nueva búsqueda (aunque sea sin haber cambiado ningún campo)
     BOTON_BUSCAR.disabled = false;
@@ -182,73 +274,84 @@ async function mostrarResultados() {
   });
   const resultadoObras = await responseObras.json();
 
-  // crear cartas para las obras obtenidas
-  const cantGrillas = Math.ceil(resultadoObras.length / 20),
-    cantFilas = Math.ceil(resultadoObras.length / 4),
-    cantFilasUltimaGrilla = cantFilas % 5 || 5,
-    cantObrasUltimaFila = resultadoObras.length % 4 || 4;
+  // en caso de que no haya ninguna obra registrada y con imagen obtenida en la búsqueda, indicar y retornar
+  if (resultadoObras.length === 0) {
+    // sacar mensaje de búsqueda en ejecución
+    const mensajeInformativo = document.getElementById("mensaje-informacion");
 
-  // crear grillas, filas de cartas y cartas
-  for (let i = 0; i < cantGrillas; i++) {
-    // la cantidad de filas podría ser menor a 5 en la última grilla
-    const grilla = [];
-    const cantFilasGrillaActual = (i === cantGrillas - 1) ? cantFilasUltimaGrilla : 5;
-
-    for (let j = 0; j < cantFilasGrillaActual; j++) {
-      // la cantidad de obras podría ser menor que 4 en la última fila de la última grilla
-      const cantObrasFilaActual = ((i === cantGrillas - 1) && (j === cantFilasUltimaGrilla - 1)) ? cantObrasUltimaFila : 4;
-
-      // crear fila
-      const filaDeCartas = document.createElement("div");
-      filaDeCartas.classList.add("fila-cartas");
-
-      for (let k = 0; k < cantObrasFilaActual; k++) {
-        // armar carta
-        const carta = document.createElement("div");
-        carta.classList.add("carta");
-
-        agregarImagenACarta(carta, resultadoObras[i * 20 + j * 4 + k]);
-        agregarDatosACarta(carta, resultadoObras[i * 20 + j * 4 + k]);
-        agregarBotonImgAdicionales(carta, resultadoObras[i * 20 + j * 4 + k]);
-
-        filaDeCartas.appendChild(carta);
-      }
-
-      grilla.push(filaDeCartas);
+    // colocar mensaje de obras no encontradas
+    if (mensajeInformativo !== null) {
+      mensajeInformativo.innerHTML = "No se encontraron obras que coincidan con los filtros ingresados";
+    } else {
+      const mensaje = document.createElement("p");
+      mensaje.id = "mensaje-informacion";
+      mensaje.innerHTML = "No se encontraron obras que coincidan con los filtros ingresados";
+      BODY.appendChild(mensaje);
     }
 
-    arrGrillasCartas.push(grilla);
+    // posibilitar que el usuario haga una nueva búsqueda (aunque sea sin haber cambiado ningún campo)
+    BOTON_BUSCAR.disabled = false;
+
+    return;
   }
 
-  // sacar mensaje de búsqueda en ejecución
-  const mensajeBusquedaEnEjecucion = document.getElementById("mensaje-busqueda-ejecucion");
-  if (mensajeBusquedaEnEjecucion) {
-    mensajeBusquedaEnEjecucion.remove();
-  }
+  arrGrillasObras.push(...crearGrillasObras(resultadoObras));
 
-  // colocar cartas de la primera grilla en el DOM
-  for (const fila of arrGrillasCartas[0]) {
-    BODY.appendChild(fila);
-  }
-
-  // colocar índices
+  // colocar índices y crear grilllas para las páginas indicadas por el mismo
   const indiceSup = crearIndice(0),
     indiceInf = crearIndice(0);
 
+  // colocar cartas de la primera grilla en el DOM
+  const grillaInicial = await arrGrillasCartas[0];
+  for (const fila of grillaInicial) {
+    BODY.appendChild(fila);
+  }
+
   FORMULARIO.insertAdjacentElement("afterend", indiceSup);
   BODY.appendChild(indiceInf);
+
+  // sacar mensaje de búsqueda en ejecución
+  const mensajeBusquedaEnEjecucion = document.getElementById("mensaje-informacion");
+  if (mensajeBusquedaEnEjecucion) {
+    mensajeBusquedaEnEjecucion.remove();
+  }
 }
 
 // cambiar la grilla mostrada actualmente y también actualizar el índice
 async function cambiarGrilla(index) {
-  // borrar resultados anteriores
+  // borrar resultados anteriores  
   sacarComponentes();
 
+  // crear y colocar mensaje de búsqueda    
+  const mensajeCargando = document.createElement("p");
+  mensajeCargando.id = "mensaje-informacion";
+  mensajeCargando.innerHTML = "Cargando contenido";
+
+  // actualizar mensaje cada segundo
+  const intervalo = setInterval(() => {
+    if (mensajeCargando !== undefined) {
+      // el mensaje permanece
+
+      // cambiar mensaje
+      if (mensajeCargando.innerHTML.slice(-3) !== '...') {
+        mensajeCargando.innerHTML += '.';
+      } else {
+        mensajeCargando.innerHTML = "Cargando contenido";
+      }
+    } else {
+      // se quitó el mensaje
+      clearInterval(intervalo);
+    }
+  }, 1000);
+  FORMULARIO.insertAdjacentElement("afterend", mensajeCargando);
+
   // obtener cartas de la grilla indicada
-  const arrFilCartas = arrGrillasCartas[index];
+  const grillaCartas = await arrGrillasCartas[index];
+
+  BODY.removeChild(mensajeCargando);
 
   // colocar en el DOM
-  for (const fila of arrFilCartas) {
+  for (const fila of grillaCartas) {
     BODY.appendChild(fila);
   }
 
@@ -265,7 +368,11 @@ function sacarComponentes() {
   // cancelar la obtención de objetos (objetos; no IDs) 
   if (controllerObras.controller !== undefined) {
     // no es la primera vez que se está intentando obtener objetos en la búsqueda actual (cambio de grilla)
-    controllerObras.controller.abort('Obtención de obras interrumpida por nueva búsqueda');
+    try {
+      controllerObras.controller.abort('Obtención de obras interrumpida por nueva búsqueda');
+    } catch (error) {
+      console.log(`Error: ${error}`);
+    }
   }
 
   // sacar obras mostradas, si las hubiera
@@ -278,25 +385,23 @@ function sacarComponentes() {
   const indices = document.getElementsByClassName("indice");
   const cantIndices = indices.length;
   for (let i = 0; i < cantIndices; i++) {
+    // indices es un estructura que se actualiza a sí misma conforme hay cambios en el DOM, por eso se remueve siempre en el índice 0
     indices[0].remove();
   }
 
-  // sacar mensaje de "no hay resultados", si lo hubiera
-  const mensajeNoHayResultados = document.getElementById("mensaje-cero-resultados");
-  if (mensajeNoHayResultados) {
-    BODY.removeChild(mensajeNoHayResultados);
-  }
-
-  // sacar mensaje de "búsqueda en ejecución", si lo hubiera
-  const mensajeBusquedaEnEjecucion = document.getElementById("mensaje-busqueda-ejecucion");
-  if (mensajeBusquedaEnEjecucion) {
-    BODY.removeChild(mensajeBusquedaEnEjecucion);
+  // sacar mensaje de informativo, si lo hubiera
+  const mensajeInfo = document.getElementById("mensaje-informacion");
+  if (mensajeInfo !== null) {
+    BODY.removeChild(mensajeInfo);
   }
 }
 
 // borrar todo lo referido a los resultados anteriores, excepto el contenido de las entradas (que ahora tienen el contenido referido a la nueva búsqueda)
 function quitarResultados() {
   sacarComponentes();
+
+  // borrar obras obtenidas en la búsqueda anterior
+  arrGrillasObras.length = 0;
 
   // borrar cartas construidas a partir de las obras obtenidas en la búsqueda anterior
   arrGrillasCartas.length = 0;
@@ -309,7 +414,7 @@ function crearIndice(index) {
   indice.classList.add("indice");
 
   // determinar vínculos a crear
-  const cantGrillas = arrGrillasCartas.length;
+  const cantGrillas = arrGrillasObras.length;
   let grillaActual = index + 1,
     cantGrillasDerecha = cantGrillas - grillaActual,
     cantGrillasIzquierda = grillaActual - 1;
@@ -320,8 +425,12 @@ function crearIndice(index) {
       crearVinculoParaIndice(indice, i);
     }
   } else {
+    // crear grilla de cartas asociada al span que aparece en el índice, para que el usuario pueda ver directamente la grilla en cuestión al momento de clickearlo
+    arrGrillasCartas[0] = crearGrillaCartas(0);
+
     // agregar vínculo a la primera grilla al índice y 3 puntos 
     crearVinculoParaIndice(indice, 0);
+
     const tresPuntos = document.createElement("span");
     /* tresPuntos.classList.add("indice"); */
     tresPuntos.innerHTML = "...";
@@ -329,9 +438,14 @@ function crearIndice(index) {
 
     // agregar al índice vínculos a las primeras 2 grillas inmediatamente a la izq. de la grilla actual
     for (let i = grillaActual - 3; i < grillaActual - 1; i++) {
+      // crear grilla de cartas asociada al span que aparece en el índice, para que el usuario pueda ver directamente la grilla en cuestión al momento de clickearlo
+      arrGrillasCartas[i] = crearGrillaCartas(i);
+
       crearVinculoParaIndice(indice, i);
     }
   }
+  // crear grilla de cartas asociada al span que aparece en el índice, para que el usuario pueda ver directamente la grilla en cuestión al momento de clickearlo
+  arrGrillasCartas[grillaActual - 1] = crearGrillaCartas(grillaActual - 1);
 
   // crear span que se vincule a la grilla actual 
   // nota: se resta 1 a grillaActual dado que la función trabaja con la posición en el arreglo de la grilla 
@@ -341,11 +455,17 @@ function crearIndice(index) {
   // crear span's que se vinculen a las distintas grillas a la der. de la elegida
   if (cantGrillasDerecha < 4) {
     for (let i = grillaActual; i < cantGrillas; i++) {
+      // crear grilla de cartas asociada al span que aparece en el índice, para que el usuario pueda ver directamente la grilla en cuestión al momento de clickearlo
+      arrGrillasCartas[i] = crearGrillaCartas(i);
+
       crearVinculoParaIndice(indice, i);
     }
   } else {
     // agregar al índice vínculos a las primeras 2 grillas inmediatamente a la der. de la grilla actual
     for (let i = grillaActual; i < grillaActual + 2; i++) {
+      // crear grilla de cartas asociada al span que aparece en el índice, para que el usuario pueda ver directamente la grilla en cuestión al momento de clickearlo
+      arrGrillasCartas[i] = crearGrillaCartas(i);
+
       crearVinculoParaIndice(indice, i);
     }
 
@@ -354,6 +474,11 @@ function crearIndice(index) {
     /* tresPuntos.classList.add("indice"); */
     tresPuntos.innerHTML = "...";
     indice.appendChild(tresPuntos);
+
+    // crear grilla de cartas asociada al span que aparece en el índice, para que el usuario pueda ver directamente la grilla en cuestión al momento de clickearlo
+    // crear grilla de cartas asociada al span que aparece en el índice, para que el usuario pueda ver directamente la grilla en cuestión al momento de clickearlo
+    arrGrillasCartas[cantGrillas - 1] = crearGrillaCartas(cantGrillas - 1);
+
     crearVinculoParaIndice(indice, cantGrillas - 1);
   }
 
@@ -426,10 +551,10 @@ function crearFilasDeIDs(arrIDResultados, cantFilas, limInfFilas, limSupFilas) {
 // crear e insertar imágen en carta
 function agregarImagenACarta(carta, obra) {
   const imgObra = document.createElement("img");
-  if (obra.primaryImage === "") {
+  if (obra.primaryImageSmall === "") {
     imgObra.src = './imágenes/imagen-no-disponible.png';
   } else {
-    imgObra.src = obra.primaryImage;
+    imgObra.src = obra.primaryImageSmall;
   }
 
   imgObra.alt = obra.title;
@@ -461,6 +586,10 @@ function agregarImagenACarta(carta, obra) {
   // ocultar fecha de origen de la obra al sacar el mouse de la imagen
   imgObra.addEventListener("mouseout", () => {
     const fechaOrigenObra = document.getElementById("fecha-origen-obra");
+    if (fechaOrigenObra === null) {
+      console.log(`Error: fechaOrigenObra no se encuentra en el DOM.`);
+      return;
+    }
     fechaOrigenObra.style.display = "none";
   });
 
@@ -595,8 +724,8 @@ function ocultarElementos() {
 
   // crear y colocar mensaje de búsqueda    
   const mensajeCargando = document.createElement("p");
-  mensajeCargando.id = "mensaje-cargando-informacion";
-  mensajeCargando.innerHTML = "Cargando información";
+  mensajeCargando.id = "mensaje-informacion";
+  mensajeCargando.innerHTML = "Cargando contenido";
 
   // actualizar mensaje cada segundo
   const intervalo = setInterval(() => {
@@ -607,7 +736,7 @@ function ocultarElementos() {
       if (mensajeCargando.innerHTML.slice(-3) !== '...') {
         mensajeCargando.innerHTML += '.';
       } else {
-        mensajeCargando.innerHTML = "Cargando información";
+        mensajeCargando.innerHTML = "Cargando contenido";
       }
     } else {
       // se quitó el mensaje

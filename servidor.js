@@ -11,7 +11,7 @@ app.use(express.static(__dirname + '/public'));
 
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/public/html/index.html');
-})
+});
 
 app.get('/obtenerDepartamentos', async function (req, res) {
   try {
@@ -19,27 +19,30 @@ app.get('/obtenerDepartamentos', async function (req, res) {
     const response = await fetch('https://collectionapi.metmuseum.org/public/collection/v1/departments');
     const datos = await response.json();
     const departamentos = datos.departments;
-    const departamentosTraducidos = [];
 
     // traducirlos
+    const traducciones = [];
     for (const depto of departamentos) {
+      // realizar traducciones asíncronamente
+      traducciones.push(translate({
+        text: depto.displayName,
+        source: 'en',
+        target: 'es'
+      }, function (result) {
+        depto.displayName = result.translation;
+      }));
+
       try {
-        await translate({
-          text: depto.displayName,
-          source: 'en',
-          target: 'es'
-        }, function (result) {
-          depto.displayName = result.translation;
-          departamentosTraducidos.push(depto);
-        });
+        await Promise.all(traducciones);
       } catch (error) {
         console.log(`Error: ${error}`);
       }
     }
 
-    res.status(200).json(departamentosTraducidos);
+    res.status(200).json(departamentos);
   } catch (error) {
     console.log('Error: ' + error);
+    res.send(error);
   }
 });
 
@@ -61,6 +64,7 @@ app.post('/obtenerIDs', async function (req, res) {
       });
     } catch (error) {
       console.log(`Error: ${error}`);
+      res.send(error);
     }
   }
 
@@ -75,6 +79,7 @@ app.post('/obtenerIDs', async function (req, res) {
       });
     } catch (error) {
       console.log(`Error: ${error}`);
+      res.send(error);
     }
   }
 
@@ -112,6 +117,7 @@ app.post('/obtenerIDs', async function (req, res) {
     .then(datos => res.status(200).json(datos))
     .catch(error => {
       console.log('Error: ' + error);
+      res.send(error);
     })
 });
 
@@ -208,9 +214,16 @@ app.post('/obtenerObras', async function (req, res) {
     return obra
   }
 
-  // realizar la obtención de las obras de forma asíncrona 
+  // realizar la obtención de las obras de forma asíncrona   
   for (const id of listaIDs) {
     promesas.push(obtenerObra(id));
+
+    // esta espacio de tiempo tiene como objetivo evitar que el servidor rechace la solicitud de obras (desconozco excactamente el por qué de dicha relación, pero sé que existe)
+    await new Promise((res, rej) => {
+      setTimeout(() => {
+        res(0);
+      }, 20);
+    });
   }
 
   const arrObras = [...(await Promise.all(promesas))];

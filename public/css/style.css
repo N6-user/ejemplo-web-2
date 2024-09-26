@@ -1,21 +1,17 @@
 body {
 	/* permitir que el header ocupe todo el ancho y alto de la ventana que se pretende */
 	margin: 0;
+	height: 1000px;
 }
 
 header {
 	/* estética */
-	background-color: lightgrey;
+	background-image: url('../imágenes/imagen-header.png');
 	height: 200px;
-	font-size: 80px;
-
-	/* alinear el texto vertical y horizontalmente*/
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	background-size: 100% 100%;
 }
 
-#indicacion-parametros {
+.indicacion-parametros {
 	font-size: 20px;
 	text-align: center;
 	margin: 30px auto;
@@ -113,7 +109,7 @@ header {
 	font-size: 16px;
 }
 
-#mensaje-cero-resultados {
+#mensaje-informacion {
 	text-align: center;
 	font-size: 20px;
 	margin: 3%;
@@ -127,18 +123,6 @@ header {
 	margin: 0;
 }
 
-#mensaje-busqueda-ejecucion {
-	text-align: center;
-	font-size: 20px;
-	margin: 3%;
-}
-
-#mensaje-cargando-informacion {
-	text-align: center;
-	font-size: 20px;
-	margin: 5%;
-}
-
 .indice {
 	display: flex;
 	justify-content: center;
@@ -148,13 +132,16 @@ header {
 
 .enlace-grilla {
 	margin: 0 0.75%;
-	text-decoration: underline;
 	cursor: pointer;
 }
 
 #indice-actual {
 	text-decoration: none;
 	cursor: default;
+	background-color: red;
+	border-radius: 25px;
+	padding: 0px 8px;
+	color: white
 }
 
 #fecha-origen-obra {
