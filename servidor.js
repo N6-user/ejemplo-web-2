@@ -265,6 +265,3 @@ app.all('*', function (req, res, next) {
 app.listen(PORT, function () {
   console.log(`Servidor en puerto ${PORT}`);
 });
-
-
-
