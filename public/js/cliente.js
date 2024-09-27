@@ -692,25 +692,13 @@ function agregarDatosACarta(carta, obra) {
 function agregarBotonImgAdicionales(carta, obra) {
   const arrImgAdicionales = obra.additionalImages || 0;
   if (arrImgAdicionales.length > 0) {
-    // TAREA DEL SERVIDOR: crear nueva página cuando se clickee en el botón de img adicionales
-    /* // crear componente
-    const botonImgAdicionales = document.createElement("button");
-
-    // configurar componente
-    botonImgAdicionales.type = "button";
-    botonImgAdicionales.classList.add("boton-img-adicionales");
-    botonImgAdicionales.innerHTML = "Ver imagenes adicionales";
-    botonImgAdicionales.addEventListener("click", mostrarImgAdicionales);
-    // anexar componentes
-    carta.appendChild(botonImgAdicionales); */
-
     // crear componente
     const enlaceImgAdicionales = document.createElement("a");
 
     // configurar componente
     enlaceImgAdicionales.classList.add("enlace-img-adicionales");
     enlaceImgAdicionales.innerHTML = "Ver imagenes adicionales";
-    enlaceImgAdicionales.href = obra.URLImagenesAdicionales;
+    enlaceImgAdicionales.href = window.location.href + obra.URLImagenesAdicionales;
     enlaceImgAdicionales.target = "_blank";
 
     // anexar componente

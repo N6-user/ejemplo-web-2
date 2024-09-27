@@ -149,7 +149,7 @@ app.post('/obtenerObras', async function (req, res) {
       // la obra tiene imágenes adicionales
 
       // adjuntar URL a endpoint de imágenes adicionales a la obra para luego poder mostrar sus imágenes adicionales
-      obra.URLImagenesAdicionales = `http://localhost:3000/mostrarImagenesAdicionales/${obra.objectID}`
+      obra.URLImagenesAdicionales = `mostrarImagenesAdicionales/${obra.objectID}`
 
       // crear y guardar objeto con datos de la obra
       const obj = {
