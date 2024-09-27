@@ -79,6 +79,12 @@ function indicarBusqueda() {
     if (mensajeBusquedaEnEjecucion !== undefined) {
       // el mensaje permanece
 
+      // el mensaje fué cambiado por otro de distinto significado
+      if (!mensajeBusquedaEnEjecucion.innerHTML.includes("Obteniendo obras")) {
+        clearInterval(intervalo);
+        return;
+      }
+
       // cambiar mensaje
       if (mensajeBusquedaEnEjecucion.innerHTML.slice(-3) !== '...') {
         mensajeBusquedaEnEjecucion.innerHTML += '.';
@@ -86,7 +92,7 @@ function indicarBusqueda() {
         mensajeBusquedaEnEjecucion.innerHTML = "Obteniendo obras";
       }
     } else {
-      // se quitó el mensaje
+      // se quitó el mensaje      
       clearInterval(intervalo);
     }
   }, 1000);
@@ -190,6 +196,7 @@ async function mostrarResultados() {
   // configurar página según haya error en la entrada o no (palabra clave debe ser una palabra)
   const palabraClave = PALABRA_CLAVE.value.trim(),
     localizacion = LOCALIZACION.value.trim();
+  PALABRA_CLAVE.value = palabraClave;
   LOCALIZACION.value = localizacion;
 
   if (palabraClave.search(/(\s)+/) != -1) {
