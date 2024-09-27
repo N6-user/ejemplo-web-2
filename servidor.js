@@ -122,8 +122,10 @@ app.post('/obtenerIDs', async function (req, res) {
 });
 
 app.post('/obtenerObras', async function (req, res) {
-  const listaIDs = req.body.ids,
-    promesas = [];
+  // evitar que Vercel con sus limitaiones me interrumpa el programa
+  const listaIDs = req.body.ids.slice(0, 200);
+
+  const promesas = [];
   arrObrasImgAdicionales.length = 0;
 
   // preparar tareas asíncronas para la obtención de una obra
